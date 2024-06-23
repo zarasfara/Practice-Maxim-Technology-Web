@@ -1,35 +1,59 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
 
 namespace WebAppTechnology;
 
 public static class Solution
 {
-    private static readonly string Vowels = "aeiouy";
+    private const string Vowels = "aeiouy";
+    private static List<string> _blackList;
+
+    public static void Initialize(IConfiguration configuration)
+    {
+        _blackList = configuration.GetSection("Settings:BlackList").Get<List<string>>();
+    }
+
+    public static bool IsValidString(string input, out string invalidChars)
+    {
+        Regex regex = new Regex("[^a-z]");
+        MatchCollection matches = regex.Matches(input);
+
+        invalidChars = new string(matches.Select(m => m.Value[0]).Distinct().ToArray());
+
+        return matches.Count == 0 && !_blackList.Contains(input);
+    }
 
     public static (string ProcessedString, Dictionary<char, int> CharOccurrences, string LongestVowelSubstring)
         ProcessString(string input)
     {
-        Dictionary<char, int> charOccurrences = new Dictionary<char, int>();
-        string processedString;
+        string processedString = ProcessInputString(input);
+        Dictionary<char, int> charOccurrences = CountCharOccurrences(processedString);
+        string longestVowelSubstring = FindLongestVowelSubstring(processedString);
 
+        return (processedString, charOccurrences, longestVowelSubstring);
+    }
+
+    private static string ProcessInputString(string input)
+    {
         if (input.Length % 2 == 0)
         {
             int midIndex = input.Length / 2;
-            string firstHalf = input.Substring(0, midIndex);
-            string secondHalf = input.Substring(midIndex);
+            string firstHalf = ReverseString(input.Substring(0, midIndex));
+            string secondHalf = ReverseString(input.Substring(midIndex));
 
-            firstHalf = ReverseString(firstHalf);
-            secondHalf = ReverseString(secondHalf);
-
-            processedString = firstHalf + secondHalf;
+            return firstHalf + secondHalf;
         }
         else
         {
             string reversed = ReverseString(input);
-            processedString = reversed + input;
+            return reversed + input;
         }
+    }
 
-        foreach (char c in processedString)
+    private static Dictionary<char, int> CountCharOccurrences(string input)
+    {
+        var charOccurrences = new Dictionary<char, int>();
+        foreach (char c in input)
         {
             if (!charOccurrences.TryAdd(c, 1))
             {
@@ -37,9 +61,7 @@ public static class Solution
             }
         }
 
-        string longestVowelSubstring = FindLongestVowelSubstring(processedString);
-
-        return (processedString, charOccurrences, longestVowelSubstring);
+        return charOccurrences;
     }
 
     private static string FindLongestVowelSubstring(string input)
@@ -67,15 +89,6 @@ public static class Solution
         }
 
         return longestSubstring;
-    }
-
-    public static bool IsValidString(string input, out string invalidChars)
-    {
-        Regex regex = new Regex("[^a-z]");
-        MatchCollection matches = regex.Matches(input);
-
-        invalidChars = new string(matches.Select(m => m.Value[0]).Distinct().ToArray());
-        return matches.Count == 0;
     }
 
     private static string ReverseString(string s)
