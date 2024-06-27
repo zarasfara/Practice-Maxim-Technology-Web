@@ -1,3 +1,4 @@
+using WebAppTechnology.Middleware;
 using WebAppTechnology.Services;
 using WebAppTechnology.Services.Interfaces;
 
@@ -30,10 +31,11 @@ public static class Program
             app.UseSwaggerUI();
         }
 
-        app.UseHttpsRedirection();
+        // app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
+        
+        app.UseMiddleware<RequestLimitingMiddleware>();
 
         app.MapControllers();
 

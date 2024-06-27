@@ -15,7 +15,7 @@ public static class Solution
 
     public static bool IsValidString(string input, out string invalidChars)
     {
-        Regex regex = new Regex("[^a-z]");
+        var regex = new Regex("[^a-z]");
         MatchCollection matches = regex.Matches(input);
 
         invalidChars = new string(matches.Select(m => m.Value[0]).Distinct().ToArray());
