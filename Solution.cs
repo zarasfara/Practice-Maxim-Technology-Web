@@ -6,6 +6,7 @@ namespace WebAppTechnology;
 public static class Solution
 {
     private const string Vowels = "aeiouy";
+    
     private static List<string> _blackList;
 
     public static void Initialize(IConfiguration configuration)
